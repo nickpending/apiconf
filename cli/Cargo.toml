@@ -1,0 +1,16 @@
+[package]
+name = "apiconf"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+toml = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+dirs = "5.0"
+thiserror = "2.0"
+rpassword = "7.0"
+
+[profile.release]
+lto = true
+overflow-checks = true

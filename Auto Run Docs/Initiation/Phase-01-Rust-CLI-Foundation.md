@@ -14,7 +14,7 @@ This phase bootstraps the Rust CLI with project structure, core modules, and the
   - Verify with `cargo check` in cli/ directory
   - *Completed: Created cli/ directory, Cargo.toml with all dependencies, and main.rs placeholder. cargo check passes. Also installed Rust toolchain and added symlinks to /opt/homebrew/bin for CI/hook compatibility.*
 
-- [ ] Implement config module (`cli/src/config.rs`):
+- [x] Implement config module (`cli/src/config.rs`):
   - Define `Config` struct with `keys: HashMap<String, Key>` and `apps: HashMap<String, App>`
   - Define `Key` struct with `provider: String` and `value: String`
   - Define `App` struct with `providers: HashMap<String, String>` (using serde flatten)
@@ -23,8 +23,9 @@ This phase bootstraps the Rust CLI with project structure, core modules, and the
   - Implement `Config::save()` with atomic writes (write to .tmp, then rename)
   - Set file permissions to 600 on every write
   - Auto-create parent directories if missing
+  - *Completed: Created config.rs with Config, Key, App structs. Uses dirs::home_dir() + .config/apiconf for cross-platform ~/.config path. Atomic writes via temp file + rename. 600 permissions on Unix.*
 
-- [ ] Implement provider registry (`cli/src/providers.rs`):
+- [x] Implement provider registry (`cli/src/providers.rs`):
   - Create static `PROVIDERS` HashMap with 5 entries:
     - `anthropic` → `ANTHROPIC_API_KEY`
     - `openai` → `OPENAI_API_KEY`
@@ -34,8 +35,9 @@ This phase bootstraps the Rust CLI with project structure, core modules, and the
   - Implement `get_env_var(provider: &str) -> Option<&'static str>`
   - Implement `is_valid_provider(name: &str) -> bool`
   - Implement `list_providers() -> Vec<&'static str>`
+  - *Completed: Created providers.rs with LazyLock static PROVIDERS map and all three functions.*
 
-- [ ] Implement error types (`cli/src/error.rs`):
+- [x] Implement error types (`cli/src/error.rs`):
   - Create `ApiconfError` enum with variants:
     - `Config(ConfigError)` - wraps config errors
     - `KeyNotFound(String, String)` - key name + available keys
@@ -46,8 +48,9 @@ This phase bootstraps the Rust CLI with project structure, core modules, and the
   - Create `ConfigError` enum with variants: `Read`, `Write`, `Parse`, `Serialize`, `NoConfigDir`
   - Implement `exit_code()` method: 1 for user errors, 2 for system errors
   - Use thiserror derive macros for clear error messages
+  - *Completed: Created error.rs with both enums, thiserror derives, and exit_code() method.*
 
-- [ ] Implement CLI main and keys commands:
+- [x] Implement CLI main and keys commands:
   - Create `cli/src/lib.rs` with module declarations: `mod config; mod providers; mod error; mod commands;`
   - Create `cli/src/commands/mod.rs` with `pub mod keys;`
   - Create `cli/src/commands/keys.rs` implementing:
@@ -61,11 +64,13 @@ This phase bootstraps the Rust CLI with project structure, core modules, and the
     - Define `Commands` enum with `Keys`, `Apps`, `Env` variants
     - Define `KeysCommand` enum with `Add`, `List`, `Remove` variants
     - Wire up command dispatch and error handling with exit codes
+  - *Completed: Created lib.rs, commands/mod.rs, commands/keys.rs with add/list/remove functions, and main.rs with full clap CLI structure. Apps and Env stubs ready for Phase 02.*
 
-- [ ] Build and verify the CLI works end-to-end:
+- [x] Build and verify the CLI works end-to-end:
   - Run `cargo build --release` in cli/ directory
   - Test `./target/release/apiconf --help` shows all commands
   - Test `./target/release/apiconf keys add anthropic` prompts for key and saves
   - Test `./target/release/apiconf keys list` shows the added key
   - Test `./target/release/apiconf keys remove anthropic` removes the key
   - Verify `~/.config/apiconf/config.toml` has 600 permissions
+  - *Completed: Release build passes. --help shows Keys/Apps/Env commands. keys list/remove work correctly. Config file has 600 permissions. Note: keys add requires TTY for rpassword; tested via manual config file creation.*

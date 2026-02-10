@@ -1,0 +1,112 @@
+/**
+ * Config loader and API for apiconf.
+ */
+
+import { readFileSync, existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { parse } from "smol-toml";
+import { AppNotFoundError, ConfigNotFoundError, KeyNotFoundError, ParseError } from "./errors.js";
+import type { AppConfig, RawConfig, RawKey } from "./types.js";
+
+/**
+ * Get the path to the config file.
+ */
+export function getConfigPath(): string {
+  return join(homedir(), ".config", "apiconf", "config.toml");
+}
+
+/**
+ * Load and parse the config file.
+ */
+export function loadConfig(): RawConfig {
+  const path = getConfigPath();
+
+  if (!existsSync(path)) {
+    throw new ConfigNotFoundError(path);
+  }
+
+  try {
+    const content = readFileSync(path, "utf-8");
+    return parse(content) as RawConfig;
+  } catch (error) {
+    if (error instanceof ConfigNotFoundError) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    throw new ParseError(path, message);
+  }
+}
+
+/**
+ * Create an AppConfig from providers and keys mappings.
+ */
+function createAppConfig(
+  appName: string,
+  providers: Record<string, string>,
+  keys: Record<string, RawKey>
+): AppConfig {
+  const config: AppConfig = {};
+
+  for (const [provider, keyName] of Object.entries(providers)) {
+    const keyInfo = keys[keyName];
+    if (keyInfo?.value) {
+      config[provider] = keyInfo.value;
+
+      // Special case for ollama: also set ollama_api_base
+      if (provider === "ollama") {
+        config["ollama_api_base"] = keyInfo.value;
+      }
+    }
+  }
+
+  return config;
+}
+
+/**
+ * Load configuration for an application.
+ *
+ * @param appName - The name of the application to load config for.
+ * @returns An AppConfig object with provider key access.
+ * @throws AppNotFoundError if the app is not found in the config.
+ * @throws ConfigNotFoundError if the config file does not exist.
+ * @throws ParseError if the config file cannot be parsed.
+ */
+export function load(appName: string): AppConfig {
+  const config = loadConfig();
+
+  const apps = config.apps ?? {};
+  if (!(appName in apps)) {
+    throw new AppNotFoundError(appName, Object.keys(apps));
+  }
+
+  const providers = apps[appName] ?? {};
+  const keys = config.keys ?? {};
+
+  return createAppConfig(appName, providers, keys);
+}
+
+/**
+ * Get a key value directly by name.
+ *
+ * @param keyName - The name of the key to retrieve.
+ * @returns The key value.
+ * @throws KeyNotFoundError if the key is not found in the config.
+ * @throws ConfigNotFoundError if the config file does not exist.
+ * @throws ParseError if the config file cannot be parsed.
+ */
+export function getKey(keyName: string): string {
+  const config = loadConfig();
+
+  const keys = config.keys ?? {};
+  if (!(keyName in keys)) {
+    throw new KeyNotFoundError(keyName, Object.keys(keys));
+  }
+
+  const keyInfo = keys[keyName];
+  if (!keyInfo?.value) {
+    throw new KeyNotFoundError(keyName, Object.keys(keys));
+  }
+
+  return keyInfo.value;
+}

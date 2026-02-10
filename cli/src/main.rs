@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use apiconf::commands::keys;
+use apiconf::commands::{apps, keys};
 
 #[derive(Parser)]
 #[command(name = "apiconf")]
@@ -59,15 +59,25 @@ enum AppsCommand {
         /// Application name
         name: String,
     },
-    /// Add a key to an application
+    /// List all application profiles
+    List,
+    /// Add a provider key to an application
     Add {
         /// Application name
         app: String,
-        /// Key name to add
-        key: String,
+        /// Provider name (e.g., anthropic, openai)
+        provider: String,
+        /// Key name (defaults to provider name)
+        #[arg(short, long)]
+        key: Option<String>,
     },
     /// Show application configuration
     Show {
+        /// Application name
+        app: String,
+    },
+    /// Remove an application profile
+    Remove {
         /// Application name
         app: String,
     },
@@ -86,10 +96,13 @@ fn main() {
             KeysCommand::List => keys::list(),
             KeysCommand::Remove { name } => keys::remove(&name),
         },
-        Commands::Apps { command: _ } => {
-            eprintln!("Apps commands not yet implemented");
-            std::process::exit(1);
-        }
+        Commands::Apps { command } => match command {
+            AppsCommand::Create { name } => apps::create(&name),
+            AppsCommand::List => apps::list(),
+            AppsCommand::Add { app, provider, key } => apps::add(&app, &provider, key.as_deref()),
+            AppsCommand::Show { app } => apps::show(&app),
+            AppsCommand::Remove { app } => apps::remove(&app),
+        },
         Commands::Env { app: _ } => {
             eprintln!("Env command not yet implemented");
             std::process::exit(1);

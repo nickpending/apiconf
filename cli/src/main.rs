@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use apiconf::commands::{apps, keys};
+use apiconf::commands::{apps, env, keys};
 
 #[derive(Parser)]
 #[command(name = "apiconf")]
@@ -103,10 +103,7 @@ fn main() {
             AppsCommand::Show { app } => apps::show(&app),
             AppsCommand::Remove { app } => apps::remove(&app),
         },
-        Commands::Env { app: _ } => {
-            eprintln!("Env command not yet implemented");
-            std::process::exit(1);
-        }
+        Commands::Env { app } => env::export(&app),
     };
 
     if let Err(e) = result {

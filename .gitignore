@@ -55,3 +55,18 @@ Temporary Items
 
 # Rust build artifacts
 target/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Node
+node_modules/
+
+# Sable agent state
+.sable/
+
+# Maestro artifacts
+Auto Run Docs/

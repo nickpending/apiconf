@@ -7,7 +7,7 @@ static PROVIDERS: LazyLock<HashMap<&'static str, Option<&'static str>>> = LazyLo
     m.insert("openai", Some("OPENAI_API_KEY"));
     m.insert("google-gemini", Some("GOOGLE_API_KEY"));
     m.insert("elevenlabs", Some("ELEVENLABS_API_KEY"));
-    m.insert("ollama", None); // Uses api_base only
+    m.insert("ollama", Some("OLLAMA_API_BASE"));
     m
 });
 

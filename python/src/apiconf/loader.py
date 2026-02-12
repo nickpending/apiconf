@@ -39,14 +39,24 @@ class AppConfig:
 
         # Resolve all provider -> key -> value mappings
         for provider, key_name in providers.items():
-            if key_name in keys:
-                key_info = keys[key_name]
-                if "value" in key_info:
-                    self._resolved[provider] = key_info["value"]
+            if key_name not in keys:
+                import warnings
 
-                    # Special case for ollama: also set ollama_api_base
-                    if provider == "ollama":
-                        self._resolved["ollama_api_base"] = key_info["value"]
+                warnings.warn(
+                    f"Key '{key_name}' referenced by app '{app_name}' not found, skipping",
+                    stacklevel=2,
+                )
+                continue
+
+            key_info = keys[key_name]
+            if "value" not in key_info:
+                continue
+
+            self._resolved[provider] = key_info["value"]
+
+            # Special case for ollama: also set ollama_api_base
+            if provider == "ollama":
+                self._resolved["ollama_api_base"] = key_info["value"]
 
     def __getattr__(self, name: str) -> str:
         if name.startswith("_"):
@@ -110,5 +120,8 @@ def get_key(key_name: str) -> str:
     if key_name not in keys:
         raise KeyNotFoundError(key_name, list(keys.keys()))
 
-    value: str = keys[key_name]["value"]
-    return value
+    key_entry = keys[key_name]
+    if "value" not in key_entry:
+        raise ParseError(get_config_path(), f"Key '{key_name}' is missing 'value' field")
+
+    return key_entry["value"]

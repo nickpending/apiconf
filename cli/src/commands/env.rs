@@ -38,16 +38,12 @@ pub fn export(app_name: &str) -> Result<(), ApiconfError> {
             }
         };
 
-        // Get the env var name, with special case for ollama
-        let env_var = if provider == "ollama" {
-            "OLLAMA_API_BASE"
-        } else {
-            match get_env_var(provider) {
-                Some(v) => v,
-                None => {
-                    eprintln!("Warning: No env var for provider '{}', skipping", provider);
-                    continue;
-                }
+        // Get the env var name from the provider registry
+        let env_var = match get_env_var(provider) {
+            Some(v) => v,
+            None => {
+                eprintln!("Warning: No env var for provider '{}', skipping", provider);
+                continue;
             }
         };
 

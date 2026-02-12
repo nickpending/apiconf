@@ -37,6 +37,9 @@ pub enum ApiconfError {
 
     #[error("App '{0}' already exists. Use --force to overwrite.")]
     AppExists(String),
+
+    #[error("API key cannot be empty")]
+    EmptyKey,
 }
 
 impl ApiconfError {
@@ -47,7 +50,8 @@ impl ApiconfError {
             | ApiconfError::AppNotFound(_, _)
             | ApiconfError::UnknownProvider(_, _)
             | ApiconfError::KeyExists(_)
-            | ApiconfError::AppExists(_) => 1,
+            | ApiconfError::AppExists(_)
+            | ApiconfError::EmptyKey => 1,
 
             // System errors: exit code 2
             ApiconfError::Config(_) => 2,

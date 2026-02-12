@@ -6,7 +6,12 @@ import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { parse } from "smol-toml";
-import { AppNotFoundError, ConfigNotFoundError, KeyNotFoundError, ParseError } from "./errors.js";
+import {
+  AppNotFoundError,
+  ConfigNotFoundError,
+  KeyNotFoundError,
+  ParseError,
+} from "./errors.js";
 import type { AppConfig, RawConfig, RawKey } from "./types.js";
 
 /**
@@ -44,19 +49,27 @@ export function loadConfig(): RawConfig {
 function createAppConfig(
   appName: string,
   providers: Record<string, string>,
-  keys: Record<string, RawKey>
+  keys: Record<string, RawKey>,
 ): AppConfig {
   const config: AppConfig = {};
 
   for (const [provider, keyName] of Object.entries(providers)) {
     const keyInfo = keys[keyName];
-    if (keyInfo?.value) {
-      config[provider] = keyInfo.value;
+    if (!keyInfo) {
+      console.warn(
+        `Warning: Key '${keyName}' referenced by app '${appName}' not found, skipping`,
+      );
+      continue;
+    }
+    if (!keyInfo.value) {
+      continue;
+    }
 
-      // Special case for ollama: also set ollama_api_base
-      if (provider === "ollama") {
-        config["ollama_api_base"] = keyInfo.value;
-      }
+    config[provider] = keyInfo.value;
+
+    // Special case for ollama: also set ollama_api_base
+    if (provider === "ollama") {
+      config["ollama_api_base"] = keyInfo.value;
     }
   }
 
@@ -104,8 +117,11 @@ export function getKey(keyName: string): string {
   }
 
   const keyInfo = keys[keyName];
-  if (!keyInfo?.value) {
-    throw new KeyNotFoundError(keyName, Object.keys(keys));
+  if (!keyInfo || typeof keyInfo.value !== "string" || keyInfo.value === "") {
+    throw new ParseError(
+      getConfigPath(),
+      `Key '${keyName}' is missing 'value' field`,
+    );
   }
 
   return keyInfo.value;

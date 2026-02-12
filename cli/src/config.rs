@@ -1,11 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs::{self, File};
+use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-
-#[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
 
 use crate::error::ConfigError;
 
@@ -62,17 +59,24 @@ impl Config {
         let tmp_path = path.with_extension("toml.tmp");
 
         {
+            // Create temp file with restricted permissions from the start (Unix)
+            #[cfg(unix)]
+            let mut file = {
+                use std::os::unix::fs::OpenOptionsExt;
+                fs::OpenOptions::new()
+                    .write(true)
+                    .create(true)
+                    .truncate(true)
+                    .mode(0o600)
+                    .open(&tmp_path)
+                    .map_err(ConfigError::Write)?
+            };
+            #[cfg(not(unix))]
             let mut file = File::create(&tmp_path).map_err(ConfigError::Write)?;
+
             file.write_all(content.as_bytes())
                 .map_err(ConfigError::Write)?;
             file.sync_all().map_err(ConfigError::Write)?;
-        }
-
-        // Set permissions to 600 before rename (Unix only)
-        #[cfg(unix)]
-        {
-            let permissions = fs::Permissions::from_mode(0o600);
-            fs::set_permissions(&tmp_path, permissions).map_err(ConfigError::Write)?;
         }
 
         // Atomic rename

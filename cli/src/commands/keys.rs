@@ -22,8 +22,7 @@ pub fn add(provider: &str, name: Option<&str>, force: bool) -> Result<(), Apicon
         .map_err(|e| ApiconfError::Config(crate::error::ConfigError::Read(e)))?;
 
     if value.is_empty() {
-        eprintln!("Error: API key cannot be empty");
-        std::process::exit(1);
+        return Err(ApiconfError::EmptyKey);
     }
 
     // Save the key

@@ -4,11 +4,11 @@ Load API keys from shared config for your applications.
 
 ## Installation
 
-Requires Node 20+.
+Requires [Bun](https://bun.sh/).
 
 ```bash
 # From the typescript/ directory
-npm install .
+bun install
 ```
 
 ## Usage

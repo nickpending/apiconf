@@ -12,6 +12,9 @@ import {
   KeyNotFoundError,
   ParseError,
 } from "./errors.js";
+
+/** Warning handler — replace to suppress or redirect warnings. */
+export let onWarn: (message: string) => void = (msg) => console.warn(msg);
 import type { AppConfig, RawConfig, RawKey } from "./types.js";
 
 /**
@@ -51,12 +54,12 @@ function createAppConfig(
   providers: Record<string, string>,
   keys: Record<string, RawKey>,
 ): AppConfig {
-  const config: AppConfig = {};
+  const config: Record<string, string> = {};
 
   for (const [provider, keyName] of Object.entries(providers)) {
     const keyInfo = keys[keyName];
     if (!keyInfo) {
-      console.warn(
+      onWarn(
         `Warning: Key '${keyName}' referenced by app '${appName}' not found, skipping`,
       );
       continue;
@@ -73,7 +76,17 @@ function createAppConfig(
     }
   }
 
-  return config;
+  return new Proxy(config, {
+    get(target, prop: string | symbol) {
+      if (typeof prop === "symbol" || prop in target) {
+        return target[prop as string];
+      }
+      const available = Object.keys(target).join(", ") || "none";
+      throw new Error(
+        `App '${appName}' has no provider '${prop}'. Available: ${available}`,
+      );
+    },
+  }) as AppConfig;
 }
 
 /**

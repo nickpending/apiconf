@@ -63,10 +63,10 @@ cd python && uv sync
 
 ### TypeScript library
 
-Requires Node 20+. Install from the local package:
+Requires [Bun](https://bun.sh/):
 
 ```bash
-cd typescript && npm install .
+cd typescript && bun install
 ```
 
 ## Config format

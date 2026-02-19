@@ -6,10 +6,19 @@ use std::path::PathBuf;
 
 use crate::error::ConfigError;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Key {
     pub provider: String,
     pub value: String,
+}
+
+impl std::fmt::Debug for Key {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Key")
+            .field("provider", &self.provider)
+            .field("value", &"[REDACTED]")
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -50,7 +59,19 @@ impl Config {
 
         // Create parent directories if missing
         if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).map_err(ConfigError::Write)?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::DirBuilderExt;
+                fs::DirBuilder::new()
+                    .recursive(true)
+                    .mode(0o700)
+                    .create(parent)
+                    .map_err(ConfigError::Write)?;
+            }
+            #[cfg(not(unix))]
+            {
+                fs::create_dir_all(parent).map_err(ConfigError::Write)?;
+            }
         }
 
         let content = toml::to_string_pretty(self).map_err(ConfigError::Serialize)?;
@@ -72,7 +93,7 @@ impl Config {
                     .map_err(ConfigError::Write)?
             };
             #[cfg(not(unix))]
-            let mut file = File::create(&tmp_path).map_err(ConfigError::Write)?;
+            let mut file = fs::File::create(&tmp_path).map_err(ConfigError::Write)?;
 
             file.write_all(content.as_bytes())
                 .map_err(ConfigError::Write)?;

@@ -1,6 +1,6 @@
 [project]
 name = "apiconf"
-version = "0.1.0"
+version = "0.1.1"
 description = "Load API keys from shared config for your applications"
 readme = "README.md"
 requires-python = ">=3.11"

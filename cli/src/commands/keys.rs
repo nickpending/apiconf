@@ -25,6 +25,10 @@ pub fn add(provider: &str, name: Option<&str>, force: bool) -> Result<(), Apicon
         return Err(ApiconfError::EmptyKey);
     }
 
+    if value.contains('\0') {
+        return Err(ApiconfError::InvalidKey);
+    }
+
     // Save the key
     config.keys.insert(
         key_name.to_string(),

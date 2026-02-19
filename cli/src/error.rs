@@ -40,6 +40,9 @@ pub enum ApiconfError {
 
     #[error("API key cannot be empty")]
     EmptyKey,
+
+    #[error("API key contains invalid characters (NUL bytes)")]
+    InvalidKey,
 }
 
 impl ApiconfError {
@@ -51,7 +54,8 @@ impl ApiconfError {
             | ApiconfError::UnknownProvider(_, _)
             | ApiconfError::KeyExists(_)
             | ApiconfError::AppExists(_)
-            | ApiconfError::EmptyKey => 1,
+            | ApiconfError::EmptyKey
+            | ApiconfError::InvalidKey => 1,
 
             // System errors: exit code 2
             ApiconfError::Config(_) => 2,

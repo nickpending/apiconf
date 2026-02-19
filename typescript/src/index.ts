@@ -3,7 +3,7 @@
  */
 
 // Loader API
-export { load, getKey, getConfigPath, loadConfig } from "./loader.js";
+export { load, getKey, getConfigPath, loadConfig, onWarn } from "./loader.js";
 
 // Error classes
 export {
@@ -27,4 +27,4 @@ export {
 } from "./providers.js";
 
 // Version
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";

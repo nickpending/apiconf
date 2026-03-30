@@ -19,12 +19,12 @@ export type { AppConfig, RawConfig, RawKey, RawApp } from "./types.js";
 
 // Provider registry
 export {
-  PROVIDERS,
-  getEnvVar,
-  isValidProvider,
+  KNOWN_DEFAULTS,
+  resolveEnvVar,
+  isKnownProvider,
   listProviders,
   type ProviderInfo,
 } from "./providers.js";
 
 // Version
-export const VERSION = "0.1.1";
+export const VERSION = "0.2.0";

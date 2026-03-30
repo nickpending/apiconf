@@ -1,14 +1,7 @@
 use crate::config::{Config, Key};
 use crate::error::ApiconfError;
-use crate::providers::{is_valid_provider, list_providers};
 
 pub fn add(provider: &str, name: Option<&str>, force: bool) -> Result<(), ApiconfError> {
-    // Validate provider
-    if !is_valid_provider(provider) {
-        let valid = list_providers().join(", ");
-        return Err(ApiconfError::UnknownProvider(provider.to_string(), valid));
-    }
-
     let key_name = name.unwrap_or(provider);
     let mut config = Config::load()?;
 
@@ -35,6 +28,7 @@ pub fn add(provider: &str, name: Option<&str>, force: bool) -> Result<(), Apicon
         Key {
             provider: provider.to_string(),
             value,
+            env_var: None,
         },
     );
     config.save()?;

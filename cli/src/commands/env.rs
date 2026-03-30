@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::error::ApiconfError;
-use crate::providers::get_env_var;
+use crate::providers::resolve_env_var;
 
 /// Escape a string for safe use in shell single quotes.
 /// Wraps value in single quotes and escapes internal single quotes with '\''
@@ -38,14 +38,8 @@ pub fn export(app_name: &str) -> Result<(), ApiconfError> {
             }
         };
 
-        // Get the env var name from the provider registry
-        let env_var = match get_env_var(provider) {
-            Some(v) => v,
-            None => {
-                eprintln!("Warning: No env var for provider '{}', skipping", provider);
-                continue;
-            }
-        };
+        // Three-tier env var resolution
+        let env_var = resolve_env_var(provider, key.env_var.as_deref());
 
         // Output export statement
         println!("export {}={}", env_var, shell_escape(&key.value));

@@ -69,11 +69,6 @@ function createAppConfig(
     }
 
     config[provider] = keyInfo.value;
-
-    // Special case for ollama: also set ollama_api_base
-    if (provider === "ollama") {
-      config["ollama_api_base"] = keyInfo.value;
-    }
   }
 
   return new Proxy(config, {

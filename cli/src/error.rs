@@ -29,9 +29,6 @@ pub enum ApiconfError {
     #[error("App '{0}' not found. Available apps: {1}")]
     AppNotFound(String, String),
 
-    #[error("Unknown provider '{0}'. Valid providers: {1}")]
-    UnknownProvider(String, String),
-
     #[error("Key '{0}' already exists. Use --force to overwrite.")]
     KeyExists(String),
 
@@ -51,7 +48,6 @@ impl ApiconfError {
             // User errors: exit code 1
             ApiconfError::KeyNotFound(_, _)
             | ApiconfError::AppNotFound(_, _)
-            | ApiconfError::UnknownProvider(_, _)
             | ApiconfError::KeyExists(_)
             | ApiconfError::AppExists(_)
             | ApiconfError::EmptyKey

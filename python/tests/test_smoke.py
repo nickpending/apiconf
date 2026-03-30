@@ -1,7 +1,7 @@
 """Smoke tests for apiconf."""
 
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 from unittest.mock import patch
 
 import pytest
@@ -59,10 +59,9 @@ def test_config_openai_returns_key_value(mock_config: Path) -> None:
     assert config.openai == "sk-openai-test"
 
 
-def test_config_ollama_api_base_special_case(mock_config: Path) -> None:
-    """Test that ollama sets ollama_api_base attribute."""
+def test_config_ollama_returns_value(mock_config: Path) -> None:
+    """Test that ollama returns the key value (no special-case alias)."""
     config = load("localdev")
-    assert config.ollama_api_base == "http://localhost:11434"
     assert config.ollama == "http://localhost:11434"
 
 

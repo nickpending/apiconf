@@ -1,6 +1,6 @@
 use crate::config::{App, Config};
 use crate::error::ApiconfError;
-use crate::providers::{get_env_var, is_valid_provider, list_providers};
+use crate::providers::resolve_env_var;
 
 pub fn create(name: &str) -> Result<(), ApiconfError> {
     let mut config = Config::load()?;
@@ -34,12 +34,6 @@ pub fn list() -> Result<(), ApiconfError> {
 }
 
 pub fn add(app_name: &str, provider: &str, key_name: Option<&str>) -> Result<(), ApiconfError> {
-    // Validate provider
-    if !is_valid_provider(provider) {
-        let valid = list_providers().join(", ");
-        return Err(ApiconfError::UnknownProvider(provider.to_string(), valid));
-    }
-
     let mut config = Config::load()?;
 
     // Validate app exists
@@ -102,7 +96,8 @@ pub fn show(app_name: &str) -> Result<(), ApiconfError> {
     }
 
     for (provider, key_name) in &app.providers {
-        let env_var = get_env_var(provider).unwrap_or("(no env var)");
+        let explicit = config.keys.get(key_name).and_then(|k| k.env_var.as_deref());
+        let env_var = resolve_env_var(provider, explicit);
         println!("  {} -> {} ({})", provider, key_name, env_var);
     }
 

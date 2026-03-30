@@ -7,9 +7,9 @@ import {
   ConfigNotFoundError,
   KeyNotFoundError,
   ParseError,
-  PROVIDERS,
-  getEnvVar,
-  isValidProvider,
+  KNOWN_DEFAULTS,
+  resolveEnvVar,
+  isKnownProvider,
   listProviders,
   VERSION,
 } from "../src/index.js";
@@ -24,7 +24,7 @@ describe("exports", () => {
   });
 
   it("exports VERSION", () => {
-    expect(VERSION).toBe("0.1.0");
+    expect(VERSION).toBe("0.2.0");
   });
 });
 
@@ -69,35 +69,28 @@ describe("error classes", () => {
 });
 
 describe("provider registry", () => {
-  it("has all 5 providers", () => {
-    expect(Object.keys(PROVIDERS)).toHaveLength(5);
-    expect(PROVIDERS["anthropic"]).toBeDefined();
-    expect(PROVIDERS["openai"]).toBeDefined();
-    expect(PROVIDERS["google-gemini"]).toBeDefined();
-    expect(PROVIDERS["elevenlabs"]).toBeDefined();
-    expect(PROVIDERS["ollama"]).toBeDefined();
+  it("has all 5 known defaults", () => {
+    expect(Object.keys(KNOWN_DEFAULTS)).toHaveLength(5);
+    expect(KNOWN_DEFAULTS["anthropic"]).toBeDefined();
+    expect(KNOWN_DEFAULTS["openai"]).toBeDefined();
+    expect(KNOWN_DEFAULTS["google-gemini"]).toBeDefined();
+    expect(KNOWN_DEFAULTS["elevenlabs"]).toBeDefined();
+    expect(KNOWN_DEFAULTS["ollama"]).toBeDefined();
   });
 
-  it("getEnvVar returns ANTHROPIC_API_KEY for anthropic", () => {
-    expect(getEnvVar("anthropic")).toBe("ANTHROPIC_API_KEY");
+  it("ollama has OLLAMA_API_BASE as envVar", () => {
+    expect(KNOWN_DEFAULTS["ollama"]?.envVar).toBe("OLLAMA_API_BASE");
   });
 
-  it("getEnvVar returns null for ollama", () => {
-    expect(getEnvVar("ollama")).toBeNull();
+  it("isKnownProvider returns true for known providers", () => {
+    expect(isKnownProvider("anthropic")).toBe(true);
+    expect(isKnownProvider("openai")).toBe(true);
+    expect(isKnownProvider("ollama")).toBe(true);
   });
 
-  it("getEnvVar returns null for unknown provider", () => {
-    expect(getEnvVar("unknown")).toBeNull();
-  });
-
-  it("isValidProvider returns true for known providers", () => {
-    expect(isValidProvider("anthropic")).toBe(true);
-    expect(isValidProvider("openai")).toBe(true);
-    expect(isValidProvider("ollama")).toBe(true);
-  });
-
-  it("isValidProvider returns false for unknown providers", () => {
-    expect(isValidProvider("unknown")).toBe(false);
+  it("isKnownProvider returns false for unknown providers", () => {
+    expect(isKnownProvider("brave")).toBe(false);
+    expect(isKnownProvider("unknown")).toBe(false);
   });
 
   it("listProviders returns sorted list", () => {
@@ -109,6 +102,32 @@ describe("provider registry", () => {
       "ollama",
       "openai",
     ]);
+  });
+});
+
+describe("resolveEnvVar", () => {
+  it("tier 1: returns explicit env var when provided", () => {
+    expect(resolveEnvVar("custom", "MY_CUSTOM_KEY")).toBe("MY_CUSTOM_KEY");
+  });
+
+  it("tier 2: returns known default for registered provider", () => {
+    expect(resolveEnvVar("anthropic")).toBe("ANTHROPIC_API_KEY");
+    expect(resolveEnvVar("ollama")).toBe("OLLAMA_API_BASE");
+    expect(resolveEnvVar("google-gemini")).toBe("GOOGLE_API_KEY");
+  });
+
+  it("tier 3: returns convention-mapped name for unknown provider", () => {
+    expect(resolveEnvVar("brave")).toBe("BRAVE_API_KEY");
+  });
+
+  it("tier 3: replaces hyphens with underscores", () => {
+    expect(resolveEnvVar("google-gemini-custom")).toBe(
+      "GOOGLE_GEMINI_CUSTOM_API_KEY",
+    );
+  });
+
+  it("tier 1 overrides tier 2", () => {
+    expect(resolveEnvVar("anthropic", "MY_OVERRIDE")).toBe("MY_OVERRIDE");
   });
 });
 

@@ -10,6 +10,8 @@ use crate::error::ConfigError;
 pub struct Key {
     pub provider: String,
     pub value: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub env_var: Option<String>,
 }
 
 impl std::fmt::Debug for Key {

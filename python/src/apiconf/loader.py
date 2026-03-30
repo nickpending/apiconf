@@ -54,10 +54,6 @@ class AppConfig:
 
             self._resolved[provider] = key_info["value"]
 
-            # Special case for ollama: also set ollama_api_base
-            if provider == "ollama":
-                self._resolved["ollama_api_base"] = key_info["value"]
-
     def __getattr__(self, name: str) -> str:
         if name.startswith("_"):
             raise AttributeError(f"'{type(self).__name__}' has no attribute '{name}'")

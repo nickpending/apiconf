@@ -4,6 +4,7 @@
 export interface RawKey {
   provider: string;
   value: string;
+  env_var?: string;
 }
 
 /**

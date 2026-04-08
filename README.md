@@ -1,10 +1,22 @@
 # apiconf
 
-Unified API key management. One config file, accessible from your shell and any language.
+<div align="center">
 
-Store your API keys once in `~/.config/apiconf/config.toml`, then access them from the CLI, Python, or TypeScript. No more scattered `.env` files.
+**Unified API key management — one config, every language**
 
-## How it works
+[![Rust](https://img.shields.io/badge/Rust-CLI-000000?style=flat&logo=rust)](https://rustup.rs)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python)](https://python.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Bun-3178C6?style=flat&logo=typescript)](https://bun.sh)
+[![npm](https://img.shields.io/npm/v/@voidwire/apiconf?style=flat&label=npm)](https://www.npmjs.com/package/@voidwire/apiconf)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+</div>
+
+---
+
+Store your API keys once in `~/.config/apiconf/config.toml`, then access them from the CLI, Python, or TypeScript. No more scattered `.env` files. Config protected with `chmod 600` — same security model as SSH keys.
+
+## 🔑 How it works
 
 **Keys** are named credentials tied to a provider:
 
@@ -43,7 +55,7 @@ const config = load("myapp");
 config.anthropic; // your key value
 ```
 
-## Install
+## 🎬 Install
 
 ### CLI (Rust)
 
@@ -69,7 +81,7 @@ Requires [Bun](https://bun.sh/):
 cd typescript && bun install
 ```
 
-## Config format
+## ⚙️ Config format
 
 All components read from `~/.config/apiconf/config.toml`, protected with `chmod 600` (same security model as SSH keys).
 
@@ -97,7 +109,7 @@ apiconf keys add anthropic --name anthropic-work
 apiconf apps add myapp anthropic --key anthropic-work
 ```
 
-## CLI reference
+## 📖 CLI reference
 
 ```
 apiconf keys add <provider> [--name <name>] [--force]
@@ -113,7 +125,7 @@ apiconf apps remove <app>
 apiconf env <app>
 ```
 
-## Supported providers
+## 🔌 Supported providers
 
 | Provider | Environment variable |
 |----------|---------------------|

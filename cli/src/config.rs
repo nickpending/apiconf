@@ -99,6 +99,23 @@ impl Config {
 
             file.write_all(content.as_bytes())
                 .map_err(ConfigError::Write)?;
+
+            #[cfg(unix)]
+            {
+                use std::os::unix::io::AsRawFd;
+                match file.sync_all() {
+                    Ok(()) => {}
+                    // F_FULLFSYNC unsupported on this filesystem (e.g., SMB share);
+                    // fall back to plain fsync so durability still hits the kernel buffer.
+                    Err(e) if matches!(e.raw_os_error(), Some(45) | Some(95)) => {
+                        if unsafe { libc::fsync(file.as_raw_fd()) } != 0 {
+                            return Err(ConfigError::Write(std::io::Error::last_os_error()));
+                        }
+                    }
+                    Err(e) => return Err(ConfigError::Write(e)),
+                }
+            }
+            #[cfg(not(unix))]
             file.sync_all().map_err(ConfigError::Write)?;
         }
 

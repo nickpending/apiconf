@@ -1,6 +1,6 @@
 [package]
 name = "apiconf"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Manage API keys and configuration for your applications"
 license = "MIT"
@@ -12,6 +12,7 @@ serde = { version = "1.0", features = ["derive"] }
 dirs = "5.0"
 thiserror = "2.0"
 rpassword = "7.0"
+libc = "0.2"
 
 [profile.release]
 lto = true
